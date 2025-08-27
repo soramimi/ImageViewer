@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 #include "MySettings.h"
+#include "SettingsDialog.h"
 #include <QClipboard>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -78,4 +79,11 @@ void MainWindow::on_action_copy_triggered()
 }
 
 
+
+
+void MainWindow::on_action_settings_triggered()
+{
+	SettingsDialog dlg(this);
+	dlg.exec();
+}
 

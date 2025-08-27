@@ -1,19 +1,32 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#include "ApplicationSettings.h"
+#include <QColor>
 #include <QString>
 
-#define ORGANIZATION_NAME "example.com"
-#define APPLICATION_NAME "MyApp"
+class MainWindow;
+class IncrementalSearch;
 
-struct Global {
-	QString organization_name = ORGANIZATION_NAME;
-	QString application_name = APPLICATION_NAME;
-	QString generic_config_dir;
-	QString app_config_dir;
-	QString config_file_path;
+class ApplicationGlobal : public ApplicationBasicData {
+private:
+	struct Private;
+	Private *m;
+public:
+	ApplicationGlobal();
+	~ApplicationGlobal();
+
+	MainWindow *mainwindow = nullptr;
+	bool start_with_shift_key = false;
+
+	ApplicationSettings appsettings;
+
+	static bool isMainThread();
+
 };
 
-extern Global *global;
+#define ASSERT_MAIN_THREAD() Q_ASSERT(ApplicationGlobal::isMainThread())
+
+extern ApplicationGlobal *global;
 
 #endif // MAIN_H

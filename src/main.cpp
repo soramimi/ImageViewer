@@ -1,14 +1,14 @@
-#include "main.h"
 #include "MainWindow.h"
 #include "joinpath.h"
+#include "main.h"
 #include <QApplication>
 #include <QStandardPaths>
 
-Global *global = nullptr;
+ApplicationGlobal *global = nullptr;
 
 int main(int argc, char *argv[])
 {
-	Global g;
+	ApplicationGlobal g;
 	global = &g;
 
 	global->organization_name = ORGANIZATION_NAME;

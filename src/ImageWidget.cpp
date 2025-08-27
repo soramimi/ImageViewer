@@ -1,6 +1,5 @@
 #include "ImageWidget.h"
 #include "MainWindow.h"
-#include "main.h"
 #include <QGridLayout>
 #include <QPainter>
 
@@ -9,7 +8,7 @@ ImageWidget::ImageWidget(QWidget *parent)
     : QWidget(parent)
 {
 	QGridLayout *layout = new QGridLayout(this);
-	layout->setMargin(0);
+	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setSpacing(0);
 	hsb_ = new QScrollBar(Qt::Horizontal, this);
 	vsb_ = new QScrollBar(Qt::Vertical, this);

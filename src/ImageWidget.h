@@ -4,7 +4,6 @@
 #include "InternalImageView.h"
 #include <QScrollBar>
 #include <QWidget>
-#include "main.h"
 
 class MainWindow;
 
