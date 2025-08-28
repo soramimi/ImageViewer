@@ -2,6 +2,7 @@
 #include "ui_MainWindow.h"
 #include "MySettings.h"
 #include "SettingsDialog.h"
+#include "main.h"
 #include <QClipboard>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -17,11 +18,30 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->setupUi(this);
 	
 	{
-		MySettings s;
-		s.beginGroup("global");
-		bool f = s.value("FitImageToView", false).toBool();
+		MySettings settings;
+		settings.beginGroup("global");
+		bool f = settings.value("FitImageToView", false).toBool();
+		settings.endGroup();
+
 		ui->widget_image_viewer->fitImageToView(f);
 		ui->action_fit_image_to_view->setChecked(f);
+	}
+
+	{
+		if (global->appsettings.remember_and_restore_window_position) {
+			Qt::WindowStates state = windowState();
+
+			MySettings settings;
+			settings.beginGroup("MainWindow");
+			bool maximized = settings.value("Maximized").toBool();
+			restoreGeometry(settings.value("Geometry").toByteArray());
+			settings.endGroup();
+
+			if (maximized) {
+				state |= Qt::WindowMaximized;
+				setWindowState(state);
+			}
+		}
 	}
 }
 
@@ -62,6 +82,29 @@ void MainWindow::on_action_file_open_triggered()
 	}
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+	MySettings settings;
+
+	if (global->appsettings.remember_and_restore_window_position) {
+		setWindowOpacity(0);
+		Qt::WindowStates state = windowState();
+		bool maximized = (state & Qt::WindowMaximized) != 0;
+		if (maximized) {
+			state &= ~Qt::WindowMaximized;
+			setWindowState(state);
+		}
+		{
+			settings.beginGroup("MainWindow");
+			settings.setValue("Maximized", maximized);
+			settings.setValue("Geometry", saveGeometry());
+			settings.endGroup();
+		}
+	}
+
+	QMainWindow::closeEvent(event);
+}
+
 void MainWindow::on_action_fit_image_to_view_changed()
 {
 	bool f = ui->action_fit_image_to_view->isChecked();
@@ -78,12 +121,14 @@ void MainWindow::on_action_copy_triggered()
 	qApp->clipboard()->setImage(img);
 }
 
-
-
-
 void MainWindow::on_action_settings_triggered()
 {
 	SettingsDialog dlg(this);
-	dlg.exec();
+	if (dlg.exec() == QDialog::Accepted) {
+		ApplicationSettings const &newsettings = dlg.settings();
+		global->appsettings = newsettings;
+	}
 }
+
+
 

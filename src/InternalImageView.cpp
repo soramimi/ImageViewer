@@ -253,6 +253,17 @@ void InternalImageView::paintEvent(QPaintEvent *event)
 		int w = m->image.width() * m->scale;
 		int h = m->image.height() * m->scale;
 		pr.drawImage(QRect(x, y, w, h), m->image);
+		QColor black(0, 0, 0);
+		QColor gray(128, 128, 128);
+		QColor white(255, 255, 255);
+		pr.fillRect(x - 1, y - 1, w + 2, 1, black);
+		pr.fillRect(x - 1, y - 1, 1, h + 2, black);
+		pr.fillRect(x - 1, y + h, w + 2, 1, black);
+		pr.fillRect(x + w, y - 1, 1, h + 2, black);
+		pr.fillRect(x - 1, y - 2, w + 2, 1, gray);
+		pr.fillRect(x - 2, y - 1, 1, h + 2, gray);
+		pr.fillRect(x - 1, y + h + 1, w + 2, 1, white);
+		pr.fillRect(x + w + 1, y - 1, 1, h + 2, white);
 	}
 }
 

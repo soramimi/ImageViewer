@@ -2,6 +2,8 @@
 #include "joinpath.h"
 #include "main.h"
 #include <QApplication>
+#include <QDir>
+#include <QFileInfo>
 #include <QStandardPaths>
 
 ApplicationGlobal *global = nullptr;
@@ -15,7 +17,21 @@ int main(int argc, char *argv[])
 	global->application_name = APPLICATION_NAME;
 	global->generic_config_dir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
 	global->app_config_dir = global->generic_config_dir / global->organization_name / global->application_name;
+	global->log_dir = global->app_config_dir / "log";
 	global->config_file_path = joinpath(global->app_config_dir, "settings.ini");
+
+	auto MKPATH = [&](const QString &path) {
+		if (!QFileInfo(path).isDir()) {
+			if (!QDir().mkpath(path)) {
+				qDebug() << "Failed to create directory:" << path;
+			}
+		}
+	};
+
+	MKPATH(global->app_config_dir);
+	MKPATH(global->log_dir);
+
+	global->appsettings = ApplicationSettings::loadSettings();
 
 	QApplication a(argc, argv);
 	MainWindow w;

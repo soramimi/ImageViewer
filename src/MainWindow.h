@@ -19,6 +19,8 @@ private:
     struct Private;
 	Private *m;
 	bool openFile(const QString &path);
+protected:
+	void closeEvent(QCloseEvent *event);
 public:
 	MainWindow(QWidget *parent = nullptr);
 	~MainWindow();
@@ -28,5 +30,7 @@ private slots:
 	void on_action_fit_image_to_view_changed();
 	void on_action_copy_triggered();
 	void on_action_settings_triggered();
+
+	// QWidget interface
 };
 #endif // MAINWINDOW_H
