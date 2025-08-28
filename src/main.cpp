@@ -6,8 +6,13 @@
 #include <QFileInfo>
 #include <QStandardPaths>
 
+/** @brief アプリケーショングローバル状態シングルトン的ポインタ。 */
 ApplicationGlobal *global = nullptr;
 
+/**
+ * @brief エントリポイント。
+ * 設定ディレクトリの生成・設定ロード・メインウィンドウ表示を行う。
+ */
 int main(int argc, char *argv[])
 {
 	ApplicationGlobal g;

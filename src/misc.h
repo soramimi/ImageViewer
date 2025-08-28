@@ -17,8 +17,12 @@
 
 class QContextMenuEvent;
 
+/**
+ * @brief 文字列・ファイルパス・描画補助など汎用ユーティリティ関数群。
+ */
 class misc {
 public:
+	/** @brief 大文字小文字無視 strcmp。 */
 	static int stricmp(char const *s1, char const *s2)
 	{
 #ifdef _WIN32
@@ -28,6 +32,7 @@ public:
 #endif
 	}
 
+	/** @brief 大文字小文字無視 strncmp。 */
 	static int strnicmp(char const *s1, char const *s2, size_t n)
 	{
 #ifdef _WIN32
@@ -37,6 +42,7 @@ public:
 #endif
 	}
 
+	/** @brief アプリ実行ディレクトリ取得。 */
 	static QString getApplicationDir();
 	// static std::vector<std::string_view> splitLines(const QByteArray &ba);
 	static QStringList splitLines(QByteArray const &ba, std::function<QString(char const *ptr, size_t len)> const &tos);
@@ -82,6 +88,7 @@ public:
 	static int compare(uint8_t const *a, size_t n, uint8_t const *b, size_t m);
 	static int compare(std::vector<uint8_t> const &a, std::vector<uint8_t> const &b);
 
+	/** @brief string_view ベクターを std::string ベクターへコピー。 */
 	static std::vector<std::string> vector_string(std::vector<std::string_view> const &v)
 	{
 		std::vector<std::string> out;
@@ -91,6 +98,7 @@ public:
 		return out;
 	}
 
+	/** @brief 文字列を整数に変換 (単純な ASCII 解析)。 */
 	template <typename T>
 	static inline T toi(std::string_view const &s, size_t *consumed = nullptr)
 	{

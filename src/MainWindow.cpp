@@ -7,9 +7,16 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+/**
+ * @brief MainWindow のプライベート実装構造体。
+ */
 struct MainWindow::Private {
 };
 
+/**
+ * @brief コンストラクタ。UI 初期化と設定値(フィット/ウィンドウ状態)復元を行う。
+ * @param parent 親ウィジェット
+ */
 MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
@@ -17,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
 	ui->setupUi(this);
 	
+	// 画像フィット設定を復元
 	{
 		MySettings settings;
 		settings.beginGroup("global");
@@ -27,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
 		ui->action_fit_image_to_view->setChecked(f);
 	}
 
+	// ウィンドウ位置・サイズの復元
 	{
 		if (global->appsettings.remember_and_restore_window_position) {
 			Qt::WindowStates state = windowState();
@@ -45,12 +54,20 @@ MainWindow::MainWindow(QWidget *parent)
 	}
 }
 
+/**
+ * @brief デストラクタ。所有リソースを破棄。
+ */
 MainWindow::~MainWindow()
 {
 	delete m;
 	delete ui;
 }
 
+/**
+ * @brief 画像ファイルを開いて表示する。
+ * @param path 画像ファイルパス
+ * @return 成功時 true / 失敗時 false
+ */
 bool MainWindow::openFile(QString const &path)
 {
 	QImage image;
@@ -62,6 +79,9 @@ bool MainWindow::openFile(QString const &path)
 	return false;
 }
 
+/**
+ * @brief [ファイルを開く] アクション処理。ダイアログ表示後、選択画像を読み込む。
+ */
 void MainWindow::on_action_file_open_triggered()
 {
 	QString path;
@@ -82,12 +102,16 @@ void MainWindow::on_action_file_open_triggered()
 	}
 }
 
+/**
+ * @brief ウィンドウクローズ時の処理。位置/サイズを必要に応じて保存。
+ * @param event クローズイベント
+ */
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	MySettings settings;
 
 	if (global->appsettings.remember_and_restore_window_position) {
-		setWindowOpacity(0);
+		setWindowOpacity(0); // フリッカー抑制
 		Qt::WindowStates state = windowState();
 		bool maximized = (state & Qt::WindowMaximized) != 0;
 		if (maximized) {
@@ -105,6 +129,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	QMainWindow::closeEvent(event);
 }
 
+/**
+ * @brief [フィット] チェック状態変更時の処理。内部ビューへ反映し設定保存。
+ */
 void MainWindow::on_action_fit_image_to_view_changed()
 {
 	bool f = ui->action_fit_image_to_view->isChecked();
@@ -115,12 +142,18 @@ void MainWindow::on_action_fit_image_to_view_changed()
 	s.setValue("FitImageToView", f);
 }
 
+/**
+ * @brief 現在表示中画像をクリップボードへコピー。
+ */
 void MainWindow::on_action_copy_triggered()
 {
 	QImage img = ui->widget_image_viewer->image();
 	qApp->clipboard()->setImage(img);
 }
 
+/**
+ * @brief 設定ダイアログ表示。OK の場合は設定を反映。
+ */
 void MainWindow::on_action_settings_triggered()
 {
 	SettingsDialog dlg(this);

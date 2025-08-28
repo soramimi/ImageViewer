@@ -8,24 +8,30 @@
 #include <QElapsedTimer>
 #include <QMenu>
 
+/**
+ * @brief 内部状態保持用プライベート構造体。
+ */
 struct InternalImageView::Private {
 	ImageWidget *parent;
 	QScrollBar *hsb;
 	QScrollBar *vsb;
 	QImage image;
-	double scale = 1;
-	double real_x = 0;
-	double real_y = 0;
-	double real_w = 0;
-	double real_h = 0;
+	double scale = 1;              //!< 拡大率
+	double real_x = 0;             //!< 表示中心の実座標X
+	double real_y = 0;             //!< 表示中心の実座標Y
+	double real_w = 0;             //!< 画像実幅
+	double real_h = 0;             //!< 画像実高
 	QPoint last_mouse_pt = {-1, -1};
-	QPoint zoom_view_pt;
-	QPointF zoom_real_pt;
-	bool dragging = false;
-	QPointF scroll_org_pt;
-	bool fit_image_to_view = false;
+	QPoint zoom_view_pt;           //!< ズーム基準ビュー座標
+	QPointF zoom_real_pt;          //!< ズーム基準実座標
+	bool dragging = false;         //!< ドラッグ中フラグ
+	QPointF scroll_org_pt;         //!< ドラッグ開始時の原点
+	bool fit_image_to_view = false;//!< フィット表示フラグ
 };
 
+/**
+ * @brief コンストラクタ。状態初期化とマウストラッキング有効化。
+ */
 InternalImageView::InternalImageView(ImageWidget *parent, QScrollBar *hsb, QScrollBar *vsb)
 	: QWidget(parent)
 	, m(new Private)
@@ -36,32 +42,48 @@ InternalImageView::InternalImageView(ImageWidget *parent, QScrollBar *hsb, QScro
 	setMouseTracking(true);
 }
 
+/**
+ * @brief デストラクタ。状態解放。
+ */
 InternalImageView::~InternalImageView()
 {
 	delete m;
 }
 
+/**
+ * @brief スクロール可能か判定。
+ * フィット表示中はスクロール不可。
+ */
 bool InternalImageView::isScrollable() const
 {
 	if (m->fit_image_to_view) return false;
 	return true;
 }
 
+/** @brief 現在の拡大率取得。 */
 double InternalImageView::scale() const
 {
 	return m->scale;
 }
 
+/** @brief 実画像幅取得。 */
 double InternalImageView::realWidth() const
 {
 	return m->real_w;
 }
 
+/** @brief 実画像高取得。 */
 double InternalImageView::realHeight() const
 {
 	return m->real_h;
 }
 
+/**
+ * @brief 指定位置を基準にズーム/スクロール位置を更新。
+ * @param view_pt ビュー座標
+ * @param real_pt 対応する実座標
+ * @param scale 新しい拡大率 (クランプ 1/16～16)
+ */
 void InternalImageView::zoomTo(QPoint view_pt, QPointF real_pt, double scale)
 {
 	const int w = width();
@@ -90,6 +112,9 @@ void InternalImageView::zoomTo(QPoint view_pt, QPointF real_pt, double scale)
 	update();
 }
 
+/**
+ * @brief フィット表示を設定。ONの場合ビューサイズから最適スケール算出。
+ */
 void InternalImageView::fitImageToView(bool fit)
 {
 	m->fit_image_to_view = fit;
@@ -101,6 +126,9 @@ void InternalImageView::fitImageToView(bool fit)
 	}
 }
 
+/**
+ * @brief 実画像サイズを設定し、表示位置を中心に再計算。
+ */
 void InternalImageView::setSize(double w, double h)
 {
 	m->real_w = w;
@@ -112,6 +140,9 @@ void InternalImageView::setSize(double w, double h)
 	}
 }
 
+/**
+ * @brief スクロールバー値から表示中心実座標を更新。
+ */
 void InternalImageView::setPosition(double x, double y)
 {
 	m->real_x = x / m->scale;
@@ -119,12 +150,16 @@ void InternalImageView::setPosition(double x, double y)
 	update();
 }
 
+/**
+ * @brief 拡大率を設定 (中心基準維持せず単純再描画)。
+ */
 void InternalImageView::setScale(double s)
 {
 	m->scale = s;
 	update();
 }
 
+/** @brief ビュー座標→実座標変換。 */
 QPointF InternalImageView::posRealFromView(QPointF const &view_pt)
 {
 	const int w = width();
@@ -134,6 +169,7 @@ QPointF InternalImageView::posRealFromView(QPointF const &view_pt)
 	return {x, y};
 }
 
+/** @brief 実座標→ビュー座標変換。 */
 QPointF InternalImageView::posViewFromReal(QPointF const &real_pt)
 {
 	const int w = width();
@@ -143,6 +179,7 @@ QPointF InternalImageView::posViewFromReal(QPointF const &real_pt)
 	return {x, y};
 }
 
+/** @brief リサイズ時。フィット中なら再計算。 */
 void InternalImageView::resizeEvent(QResizeEvent *event)
 {
 	QWidget::resizeEvent(event);
@@ -152,6 +189,7 @@ void InternalImageView::resizeEvent(QResizeEvent *event)
 	}
 }
 
+/** @brief マウス押下: ドラッグ開始判定とカーソル変更。 */
 void InternalImageView::mousePressEvent(QMouseEvent *event)
 {
 	if (event->buttons() & Qt::LeftButton) {
@@ -165,6 +203,7 @@ void InternalImageView::mousePressEvent(QMouseEvent *event)
 	}
 }
 
+/** @brief マウス解放: ドラッグ終了とカーソル刷新。 */
 void InternalImageView::mouseReleaseEvent(QMouseEvent *event)
 {
 	bool done = false;
@@ -175,6 +214,7 @@ void InternalImageView::mouseReleaseEvent(QMouseEvent *event)
 	m->dragging = false;
 }
 
+/** @brief マウス移動: ドラッグ中はスクロール、非ドラッグ時はズーム基準更新。 */
 void InternalImageView::mouseMoveEvent(QMouseEvent *event)
 {
 	QPoint pt = QCursor::pos();
@@ -217,6 +257,7 @@ void InternalImageView::mouseMoveEvent(QMouseEvent *event)
 	}
 }
 
+/** @brief ホイール操作でのズーム処理 (フィット/ドラッグ中は無効)。 */
 void InternalImageView::wheelEvent(QWheelEvent *event)
 {
 	if (m->dragging) return;
@@ -228,22 +269,26 @@ void InternalImageView::wheelEvent(QWheelEvent *event)
 	zoomTo(m->zoom_view_pt, m->zoom_real_pt, scale);
 }
 
+/** @brief コンテキストメニューイベント: ドラッグ解除のみ。 */
 void InternalImageView::contextMenuEvent(QContextMenuEvent *event)
 {
 	m->dragging = false;
 }
 
+/** @brief 現在保持画像取得。 */
 QImage InternalImageView::image() const
 {
 	return m->image;
 }
 
+/** @brief 画像を設定し再描画。 */
 void InternalImageView::setImage(const QImage &image)
 {
 	m->image = image;
 	update();
 }
 
+/** @brief 描画イベント: 画像を中心基準で描画し簡易枠線を付与。 */
 void InternalImageView::paintEvent(QPaintEvent *event)
 {
 	QPainter pr(this);
@@ -252,18 +297,20 @@ void InternalImageView::paintEvent(QPaintEvent *event)
 		int y = height() / 2 - m->real_y * m->scale;
 		int w = m->image.width() * m->scale;
 		int h = m->image.height() * m->scale;
-		pr.drawImage(QRect(x, y, w, h), m->image);
-		QColor black(0, 0, 0);
-		QColor gray(128, 128, 128);
-		QColor white(255, 255, 255);
-		pr.fillRect(x - 1, y - 1, w + 2, 1, black);
-		pr.fillRect(x - 1, y - 1, 1, h + 2, black);
-		pr.fillRect(x - 1, y + h, w + 2, 1, black);
-		pr.fillRect(x + w, y - 1, 1, h + 2, black);
-		pr.fillRect(x - 1, y - 2, w + 2, 1, gray);
-		pr.fillRect(x - 2, y - 1, 1, h + 2, gray);
-		pr.fillRect(x - 1, y + h + 1, w + 2, 1, white);
-		pr.fillRect(x + w + 1, y - 1, 1, h + 2, white);
+		if (w > 0 && h > 0) {
+			pr.drawImage(QRect(x, y, w, h), m->image);
+			QColor black(0, 0, 0);
+			QColor gray(128, 128, 128);
+			QColor white(255, 255, 255);
+			pr.fillRect(x - 1, y - 1, w + 2, 1, black);
+			pr.fillRect(x - 1, y - 1, 1, h + 2, black);
+			pr.fillRect(x - 1, y + h, w + 2, 1, black);
+			pr.fillRect(x + w, y - 1, 1, h + 2, black);
+			pr.fillRect(x - 1, y - 2, w + 2, 1, gray);
+			pr.fillRect(x - 2, y - 1, 1, h + 2, gray);
+			pr.fillRect(x - 1, y + h + 1, w + 2, 1, white);
+			pr.fillRect(x + w + 1, y - 1, 1, h + 2, white);
+		}
 	}
 }
 

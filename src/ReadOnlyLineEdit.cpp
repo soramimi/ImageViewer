@@ -3,6 +3,7 @@
 
 #include <QPainter>
 
+/** @brief コンストラクタ: 読み取り専用/フレーム無し/背景透過設定。 */
 ReadOnlyLineEdit::ReadOnlyLineEdit(QWidget *parent)
 	: QLineEdit(parent)
 {
@@ -11,6 +12,7 @@ ReadOnlyLineEdit::ReadOnlyLineEdit(QWidget *parent)
 	setStyleSheet("* { background: transparent; }");
 }
 
+/** @brief テキスト設定時に選択を解除。 */
 void ReadOnlyLineEdit::setText(QString const &text)
 {
 	ASSERT_MAIN_THREAD();
@@ -19,6 +21,7 @@ void ReadOnlyLineEdit::setText(QString const &text)
 	setSelection(0, 0);
 }
 
+/** @brief 1px の下線を描画後、通常の描画処理。 */
 void ReadOnlyLineEdit::paintEvent(QPaintEvent *event)
 {
 	{

@@ -7,6 +7,7 @@
 #pragma warning(disable:4996)
 #endif
 
+/** @brief 前後の二重引用符を取り除くユーティリティ。 */
 template <typename T> static inline void trimquot(T const **begin, T const **end)
 {
 	if (*begin + 1 < *end && (*begin)[0] == '"' && (*end)[-1] == '"') {
@@ -15,6 +16,9 @@ template <typename T> static inline void trimquot(T const **begin, T const **end
 	}
 }
 
+/**
+ * @brief パス結合実装 (末尾/先頭の区切りを整理して '/' で連結)。
+ */
 template <typename T, typename U> void joinpath_(T const *left, T const *right, U *vec)
 {
 	size_t llen = 0;
@@ -45,6 +49,7 @@ template <typename T, typename U> void joinpath_(T const *left, T const *right, 
 	}
 }
 
+/** @brief char* 版 joinpath。 */
 std::string joinpath(char const *left, char const *right)
 {
 	std::vector<char> vec;
@@ -52,11 +57,13 @@ std::string joinpath(char const *left, char const *right)
 	return std::string(vec.begin(), vec.end());
 }
 
+/** @brief std::string 版 joinpath。 */
 std::string joinpath(std::string const &left, std::string const &right)
 {
 	return joinpath(left.c_str(), right.c_str());
 }
 
+/** @brief QString 版 joinpath 実装。 */
 QString qjoinpath(ushort const *left, ushort const *right)
 {
     std::vector<ushort> vec;
